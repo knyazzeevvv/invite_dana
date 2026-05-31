@@ -1,0 +1,794 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Приглашение 💕</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;1,400&family=Lato:wght@300;400&display=swap" rel="stylesheet">
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  font-family: 'Lato', sans-serif;
+  min-height: 100vh;
+  background: linear-gradient(135deg, #1a0a2e 0%, #2d1b4e 30%, #1a0a2e 60%, #0d0520 100%);
+  color: #fff;
+  overflow-x: hidden;
+}
+
+.screen {
+  display: none;
+  min-height: 100vh;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+  text-align: center;
+  padding: 2rem 1.5rem;
+  animation: fadeIn 0.6s ease;
+}
+.screen.active { display: flex; }
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(16px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+@keyframes float {
+  0%,100% { transform: translateY(0); }
+  50%     { transform: translateY(-10px); }
+}
+@keyframes sparkle {
+  0%,100% { opacity: 0; transform: scale(0) rotate(0deg); }
+  50%     { opacity: 1; transform: scale(1) rotate(180deg); }
+}
+@keyframes heartbeat {
+  0%,100% { transform: scale(1); }
+  25%     { transform: scale(1.15); }
+  50%     { transform: scale(1); }
+  75%     { transform: scale(1.1); }
+}
+@keyframes pulse-glow {
+  0%,100% { box-shadow: 0 0 18px rgba(255,105,180,0.4), 0 0 36px rgba(255,105,180,0.15); }
+  50%     { box-shadow: 0 0 30px rgba(255,105,180,0.7), 0 0 60px rgba(255,105,180,0.35); }
+}
+@keyframes shimmer {
+  0%   { background-position: -200% center; }
+  100% { background-position:  200% center; }
+}
+@keyframes rosePetal {
+  0%  { transform: translateY(-50px) rotate(0deg); opacity: 0; }
+  10% { opacity: 1; }
+  100%{ transform: translateY(110vh) rotate(540deg); opacity: 0; }
+}
+@keyframes confetti-fall {
+  0%   { transform: translateY(-20px) rotate(0deg); opacity: 1; }
+  100% { transform: translateY(100vh) rotate(720deg); opacity: 0; }
+}
+/* cursor blink */
+@keyframes blink {
+  0%,100% { opacity: 1; }
+  50%     { opacity: 0; }
+}
+
+/* Stars & Petals */
+.stars-container,
+.petals-container {
+  position: fixed; top: 0; left: 0;
+  width: 100%; height: 100%;
+  pointer-events: none; overflow: hidden; z-index: 0;
+}
+.star {
+  position: absolute; width: 3px; height: 3px;
+  background: #fff; border-radius: 50%;
+  animation: sparkle ease-in-out infinite;
+}
+.petal {
+  position: absolute; width: 11px; height: 15px;
+  background: radial-gradient(ellipse, #ff69b4, #c71585);
+  border-radius: 0 50% 0 50%; opacity: 0;
+  animation: rosePetal linear infinite;
+}
+
+/* ── Typewriter elements ── */
+.tw-title {
+  font-family: 'Playfair Display', serif;
+  font-size: clamp(1.7rem, 5vw, 3.2rem);
+  font-weight: 400;
+  line-height: 1.3;
+  margin-bottom: 1.2rem;
+  background: linear-gradient(135deg, #ff9de2, #ffd6f6, #ffb3e6, #ff69b4);
+  background-size: 200% auto;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  animation: shimmer 3s linear infinite;
+  min-height: 1.4em; /* reserve space while typing */
+}
+.tw-sub {
+  font-size: clamp(0.9rem, 2.5vw, 1.1rem);
+  color: rgba(255,220,240,0.85);
+  font-weight: 300;
+  letter-spacing: 0.03em;
+  margin-bottom: 2rem;
+  max-width: 440px;
+  line-height: 1.75;
+  min-height: 1.6em;
+}
+/* blinking cursor appended while typing */
+.tw-cursor {
+  display: inline-block;
+  width: 2px; height: 1em;
+  background: rgba(255,150,200,0.85);
+  margin-left: 2px;
+  vertical-align: text-bottom;
+  animation: blink 0.75s step-end infinite;
+  border-radius: 1px;
+}
+/* invisible placeholder so layout doesn't jump */
+.tw-hidden { opacity: 0; pointer-events: none; }
+
+/* Buttons */
+.btn {
+  padding: 0.9rem 2.4rem; border: none; border-radius: 50px;
+  font-family: 'Lato', sans-serif;
+  font-size: clamp(0.85rem, 2vw, 1rem);
+  font-weight: 400; letter-spacing: 0.07em;
+  cursor: pointer; transition: all 0.3s ease;
+  text-transform: uppercase; white-space: nowrap;
+}
+.btn-primary {
+  background: linear-gradient(135deg, #ff69b4, #ff1493, #c71585);
+  color: #fff; animation: pulse-glow 2s ease infinite;
+}
+.btn-primary:hover  { transform: scale(1.05); }
+.btn-primary:active { transform: scale(0.97); }
+
+/* fade-in for button after typing finishes */
+.btn-reveal {
+  opacity: 0; transform: translateY(10px);
+  transition: opacity 0.5s ease, transform 0.5s ease;
+}
+.btn-reveal.visible { opacity: 1; transform: translateY(0); }
+
+.btn-yes {
+  background: linear-gradient(135deg, #ff69b4, #ff1493);
+  color: #fff; padding: 0.9rem 2.2rem;
+  font-size: clamp(0.88rem, 2.5vw, 1.05rem);
+  animation: pulse-glow 2s ease infinite;
+  border: none; border-radius: 50px;
+  font-family: 'Lato', sans-serif; letter-spacing: 0.07em;
+  cursor: pointer; text-transform: uppercase;
+  white-space: nowrap; flex-shrink: 0;
+  position: relative; z-index: 10; transition: transform 0.25s;
+}
+.btn-yes:hover { transform: scale(1.07); }
+
+.btn-no {
+  background: transparent; color: rgba(255,180,210,0.75);
+  border: 1px solid rgba(255,105,180,0.35);
+  padding: 0.9rem 2.2rem;
+  font-size: clamp(0.88rem, 2.5vw, 1.05rem);
+  border-radius: 50px; font-family: 'Lato', sans-serif;
+  letter-spacing: 0.07em; cursor: pointer; text-transform: uppercase;
+  white-space: nowrap; flex-shrink: 0; position: relative; z-index: 5;
+  transition: transform 0.22s cubic-bezier(.25,.8,.25,1),
+              font-size 0.22s ease, opacity 0.22s ease;
+}
+
+/* Emojis */
+.emoji-big   { font-size: clamp(3rem,10vw,5rem); display: block; margin-bottom: 1.2rem; animation: float 3s ease-in-out infinite; }
+.emoji-heart { font-size: clamp(2.6rem,8vw,4rem); display: block; margin-bottom: 1.2rem; animation: heartbeat 1.5s ease-in-out infinite; }
+
+/* Card */
+.card {
+  background: rgba(255,255,255,0.06);
+  border: 1px solid rgba(255,105,180,0.25);
+  border-radius: 22px;
+  padding: clamp(1.3rem, 5vw, 2.4rem);
+  max-width: 500px; width: 100%;
+  backdrop-filter: blur(10px);
+  position: relative; z-index: 1;
+}
+
+/* Button arena */
+.btn-row {
+  display: flex; gap: 1rem; justify-content: center;
+  align-items: center; margin-top: 1.2rem;
+  position: relative; min-height: 56px; overflow: visible;
+}
+
+/* Divider */
+.divider {
+  width: 56px; height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(255,105,180,0.5), transparent);
+  margin: 1.3rem auto;
+}
+
+/* Tag */
+.tag {
+  display: inline-block;
+  background: rgba(255,105,180,0.18);
+  border: 1px solid rgba(255,105,180,0.28);
+  border-radius: 20px; padding: 0.28rem 0.75rem;
+  font-size: 0.75rem; color: rgba(255,180,210,0.9);
+  margin-bottom: 0.9rem; letter-spacing: 0.07em; text-transform: uppercase;
+}
+
+/* Progress dots */
+.progress-dots { display: flex; gap: 7px; justify-content: center; margin-bottom: 1.6rem; flex-wrap: wrap; }
+.dot { width: 6px; height: 6px; border-radius: 50%; background: rgba(255,105,180,0.22); transition: all 0.3s; }
+.dot.active { background: #ff69b4; transform: scale(1.35); }
+.dot.done   { background: rgba(255,105,180,0.55); }
+
+/* Calendar */
+.calendar-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 3px; margin: 0.8rem 0; }
+.cal-header { font-size: clamp(0.6rem,1.8vw,0.72rem); color: rgba(255,180,210,0.6); padding: 3px 2px; text-align: center; text-transform: uppercase; letter-spacing: 0.02em; }
+.cal-day { padding: clamp(5px,1.5vw,8px) 2px; text-align: center; border-radius: 7px; cursor: pointer; font-size: clamp(0.72rem,2vw,0.88rem); color: rgba(255,220,240,0.8); transition: all 0.18s; }
+.cal-day:hover    { background: rgba(255,105,180,0.28); color: #fff; }
+.cal-day.selected { background: linear-gradient(135deg, #ff69b4, #ff1493); color: #fff; font-weight: 600; }
+.cal-day.empty    { cursor: default; }
+.cal-day.past     { opacity: 0.28; cursor: default; pointer-events: none; }
+.cal-nav { display: flex; align-items: center; justify-content: space-between; margin-bottom: 0.9rem; }
+.cal-nav button { background: rgba(255,105,180,0.18); border: 1px solid rgba(255,105,180,0.28); color: #fff; border-radius: 50%; width: 34px; height: 34px; cursor: pointer; font-size: 1rem; display: flex; align-items: center; justify-content: center; transition: all 0.2s; flex-shrink: 0; }
+.cal-nav button:hover { background: rgba(255,105,180,0.38); }
+.cal-nav span { font-family: 'Playfair Display', serif; font-size: clamp(0.9rem,3vw,1.05rem); color: rgba(255,220,240,0.9); }
+
+/* Time picker */
+.time-picker { display: flex; gap: 0.8rem; justify-content: center; align-items: center; margin: 0.8rem 0; flex-wrap: wrap; }
+.time-picker select { background: rgba(255,255,255,0.08); border: 1px solid rgba(255,105,180,0.28); color: #fff; border-radius: 11px; padding: 0.65rem 0.9rem; font-size: clamp(0.9rem,2.5vw,1.05rem); cursor: pointer; font-family: 'Lato', sans-serif; -webkit-appearance: none; text-align: center; min-width: 66px; }
+.time-picker select option { background: #2d1b4e; color: #fff; }
+.time-sep { font-size: 1.4rem; color: rgba(255,180,210,0.7); }
+
+/* Food input */
+.food-input { width: 100%; background: rgba(255,255,255,0.08); border: 1px solid rgba(255,105,180,0.28); border-radius: 13px; padding: 0.9rem 1.1rem; color: #fff; font-size: 0.97rem; font-family: 'Lato', sans-serif; outline: none; transition: border-color 0.3s; margin: 0.5rem 0 1.4rem; resize: none; }
+.food-input:focus        { border-color: rgba(255,105,180,0.65); }
+.food-input::placeholder { color: rgba(255,180,210,0.38); }
+
+/* Final screen */
+.final-box { background: rgba(255,255,255,0.07); border: 1px solid rgba(255,105,180,0.32); border-radius: 18px; padding: clamp(1.1rem,4vw,1.8rem); margin: 1.3rem 0; text-align: left; }
+.final-row { display: flex; align-items: flex-start; gap: 0.75rem; margin-bottom: 0.75rem; font-size: clamp(0.88rem,2.5vw,1rem); color: rgba(255,220,240,0.9); }
+.final-row .icon { font-size: 1.2rem; flex-shrink: 0; }
+.final-row span  { line-height: 1.5; word-break: break-word; }
+
+/* Confetti */
+.confetti-piece { position: fixed; width: 9px; height: 9px; border-radius: 2px; animation: confetti-fall 3s ease-in forwards; z-index: 100; pointer-events: none; }
+
+/* ────────────────────────────────
+   RESPONSIVE
+──────────────────────────────── */
+@media (max-width: 768px) {
+  .tw-sub { max-width: 100%; }
+  .card { max-width: 96vw; }
+}
+@media (max-width: 480px) {
+  .screen { padding: 1.5rem 1rem; justify-content: flex-start; padding-top: 1.8rem; }
+  .card { border-radius: 18px; }
+  .btn { padding: 0.8rem 1.5rem; }
+  .btn-yes, .btn-no { padding: 0.8rem 1.5rem; }
+  .btn-row { gap: 0.65rem; min-height: 50px; }
+  .progress-dots { margin-bottom: 1.1rem; gap: 5px; }
+  .dot { width: 5px; height: 5px; }
+  .divider { margin: 1rem auto; }
+}
+@media (max-width: 360px) {
+  .tw-title { font-size: 1.35rem; }
+  .tw-sub   { font-size: 0.85rem; }
+  .card { padding: 1rem 0.9rem; }
+  .btn { padding: 0.72rem 1.2rem; font-size: 0.8rem; }
+  .btn-yes, .btn-no { padding: 0.72rem 1.2rem; font-size: 0.8rem; }
+  .calendar-grid { gap: 2px; }
+  .cal-day    { font-size: 0.68rem; }
+  .cal-header { font-size: 0.58rem; }
+}
+@media (max-height: 520px) and (orientation: landscape) {
+  .screen { min-height: auto; padding: 0.8rem 2rem; justify-content: center; }
+  .emoji-big   { font-size: 2.4rem; margin-bottom: 0.5rem; }
+  .emoji-heart { font-size: 2rem;   margin-bottom: 0.5rem; }
+  .tw-title { margin-bottom: 0.6rem; }
+  .tw-sub   { margin-bottom: 1rem; }
+  .divider  { margin: 0.7rem auto; }
+  .card { padding: 1rem 1.5rem; }
+  .progress-dots { margin-bottom: 0.7rem; }
+}
+</style>
+</head>
+<body>
+
+<div class="stars-container" id="stars"></div>
+<div class="petals-container" id="petals"></div>
+
+<!-- Screen 1: Welcome -->
+<div class="screen active" id="s1">
+  <div class="progress-dots">
+    <div class="dot active"></div><div class="dot"></div><div class="dot"></div>
+    <div class="dot"></div><div class="dot"></div><div class="dot"></div><div class="dot"></div>
+  </div>
+  <div style="position:relative;z-index:1">
+    <span class="emoji-big">🌹</span>
+    <div class="tag">Специально для тебя</div>
+    <h1 class="tw-title" id="t1-title"></h1>
+    <p  class="tw-sub"   id="t1-sub"></p>
+    <button class="btn btn-primary btn-reveal" id="t1-btn" onclick="go(2)">Привет ✨</button>
+  </div>
+</div>
+
+<!-- Screen 2: Ready for proposal? -->
+<div class="screen" id="s2">
+  <div class="progress-dots">
+    <div class="dot done"></div><div class="dot active"></div><div class="dot"></div>
+    <div class="dot"></div><div class="dot"></div><div class="dot"></div><div class="dot"></div>
+  </div>
+  <div class="card">
+    <span class="emoji-big">💌</span>
+    <h1 class="tw-title" id="t2-title" style="font-size:clamp(1.5rem,4vw,2rem)"></h1>
+    <p  class="tw-sub"   id="t2-sub"   style="margin-bottom:1.8rem"></p>
+    <button class="btn btn-primary btn-reveal" id="t2-btn" onclick="go(3)">Далее →</button>
+  </div>
+</div>
+
+<!-- Screen 3: Ready? -->
+<div class="screen" id="s3">
+  <div class="progress-dots">
+    <div class="dot done"></div><div class="dot done"></div><div class="dot active"></div>
+    <div class="dot"></div><div class="dot"></div><div class="dot"></div><div class="dot"></div>
+  </div>
+  <div class="card">
+    <span class="emoji-big">🦋</span>
+    <h1 class="tw-title" id="t3-title" style="font-size:clamp(1.5rem,4vw,2rem)"></h1>
+    <p  class="tw-sub"   id="t3-sub"></p>
+    <div class="divider"></div>
+    <p  class="tw-sub"   id="t3-sub2" style="font-size:0.92rem;margin-bottom:1.8rem"></p>
+    <button class="btn btn-primary btn-reveal" id="t3-btn" onclick="go('3_5')">Далее →</button>
+  </div>
+</div>
+
+<!-- Screen 3.5: Really ready? -->
+<div class="screen" id="s3_5">
+  <div class="progress-dots">
+    <div class="dot done"></div><div class="dot done"></div><div class="dot done"></div>
+    <div class="dot active"></div><div class="dot"></div><div class="dot"></div><div class="dot"></div>
+  </div>
+  <div class="card">
+    <span class="emoji-big">🌸</span>
+    <h1 class="tw-title" id="t35-title" style="font-size:clamp(1.5rem,4vw,2rem)"></h1>
+    <p  class="tw-sub"   id="t35-sub"></p>
+    <div class="divider"></div>
+    <p  class="tw-sub"   id="t35-sub2" style="font-size:0.92rem;margin-bottom:1.8rem"></p>
+    <button class="btn btn-primary btn-reveal" id="t35-btn" onclick="go(4)">Да, точно! 💕</button>
+  </div>
+</div>
+
+<!-- Screen 4: Invitation -->
+<div class="screen" id="s4">
+  <div class="progress-dots">
+    <div class="dot done"></div><div class="dot done"></div><div class="dot done"></div>
+    <div class="dot done"></div><div class="dot active"></div><div class="dot"></div><div class="dot"></div>
+  </div>
+  <div class="card" style="max-width:520px">
+    <span class="emoji-heart">💖</span>
+    <h1 class="tw-title" id="t4-title" style="font-size:clamp(1.5rem,4vw,1.9rem)"></h1>
+    <p  class="tw-sub"   id="t4-sub"   style="margin-bottom:1.6rem;font-size:clamp(0.88rem,2.2vw,1rem)"></p>
+    <div class="divider"></div>
+    <div class="btn-row" id="btnRow">
+      <button class="btn-yes" onclick="sayYes()">Да! 💕</button>
+      <button class="btn-no" id="noBtn"
+        onmouseover="runAway(event)"
+        ontouchstart="runAway(event)">Нет</button>
+    </div>
+  </div>
+</div>
+
+<!-- Screen 5: Calendar + Time -->
+<div class="screen" id="s5">
+  <div class="progress-dots">
+    <div class="dot done"></div><div class="dot done"></div><div class="dot done"></div>
+    <div class="dot done"></div><div class="dot done"></div><div class="dot active"></div><div class="dot"></div>
+  </div>
+  <div class="card" style="max-width:420px">
+    <span style="font-size:2.8rem;display:block;margin-bottom:0.8rem">📅</span>
+    <h2 class="tw-title" id="t5-title" style="font-size:clamp(1.4rem,4vw,1.7rem)"></h2>
+    <div class="cal-nav">
+      <button onclick="changeMonth(-1)">‹</button>
+      <span id="calTitle"></span>
+      <button onclick="changeMonth(1)">›</button>
+    </div>
+    <div class="calendar-grid" id="calGrid">
+      <div class="cal-header">Пн</div><div class="cal-header">Вт</div>
+      <div class="cal-header">Ср</div><div class="cal-header">Чт</div>
+      <div class="cal-header">Пт</div><div class="cal-header">Сб</div>
+      <div class="cal-header">Вс</div>
+    </div>
+    <div class="divider"></div>
+    <p style="color:rgba(255,180,210,0.8);font-size:0.82rem;margin-bottom:0.7rem;letter-spacing:0.05em;text-transform:uppercase">Время встречи</p>
+    <div class="time-picker">
+      <select id="hourSel"></select>
+      <span class="time-sep">:</span>
+      <select id="minSel">
+        <option>00</option><option>15</option><option>30</option><option>45</option>
+      </select>
+    </div>
+    <button class="btn btn-primary" style="margin-top:1.3rem;width:100%" onclick="goToFood()">Продолжить →</button>
+  </div>
+</div>
+
+<!-- Screen 6: Favorite food -->
+<div class="screen" id="s6">
+  <div class="progress-dots">
+    <div class="dot done"></div><div class="dot done"></div><div class="dot done"></div>
+    <div class="dot done"></div><div class="dot done"></div><div class="dot done"></div><div class="dot active"></div>
+  </div>
+  <div class="card">
+    <span style="font-size:clamp(2.5rem,8vw,3.5rem);display:block;margin-bottom:0.9rem;animation:float 3s ease-in-out infinite">🍽️</span>
+    <h2 class="tw-title" id="t6-title" style="font-size:clamp(1.4rem,4vw,1.7rem)"></h2>
+    <p  class="tw-sub"   id="t6-sub"   style="margin-bottom:0"></p>
+    <div class="divider"></div>
+    <textarea class="food-input" id="foodInput" rows="3" placeholder="Например: паста карбонара, суши, пицца..."></textarea>
+    <button class="btn btn-primary btn-reveal" id="t6-btn" style="width:100%" onclick="goToFinal()">Готово! 💕</button>
+  </div>
+</div>
+
+<!-- Screen 7: Final -->
+<div class="screen" id="s7">
+  <div style="position:relative;z-index:1;width:100%;max-width:480px">
+    <span style="font-size:clamp(3.5rem,10vw,5rem);display:block;margin-bottom:0.9rem;animation:heartbeat 1.5s ease-in-out infinite">💍</span>
+    <h1 class="tw-title" id="t7-title"></h1>
+    <div class="final-box">
+      <div class="final-row"><span class="icon">💖</span><span>Наше свидание состоится!</span></div>
+      <div class="final-row"><span class="icon">📅</span><span id="finalDate">—</span></div>
+      <div class="final-row"><span class="icon">🕐</span><span id="finalTime">—</span></div>
+      <div class="final-row"><span class="icon">🍽️</span><span id="finalFood">—</span></div>
+    </div>
+    <p class="tw-sub" id="t7-sub" style="font-size:clamp(0.85rem,2.5vw,0.95rem);color:rgba(255,180,210,0.8)"></p>
+  </div>
+</div>
+
+<script>
+const MONTHS_RU  = ['Январь','Февраль','Март','Апрель','Май','Июнь','Июль','Август','Сентябрь','Октябрь','Ноябрь','Декабрь'];
+const MONTHS_GEN = ['января','февраля','марта','апреля','мая','июня','июля','августа','сентября','октября','ноября','декабря'];
+
+let calYear, calMonth, selDay = null, selMonth = null, selYear = null;
+let noRunCount = 0;
+let twTimers = []; // track all running timers so we can cancel on navigate
+
+/* ─────────────────────────────────────────
+   TYPEWRITER ENGINE
+───────────────────────────────────────── */
+/**
+ * type(el, text, speed, onDone)
+ * Supports inline \n as literal line breaks rendered as <br>
+ * Supports emoji safely by splitting into grapheme-ish chunks
+ */
+function type(el, text, speed, onDone) {
+  if (!el) { if (onDone) onDone(); return; }
+  el.innerHTML = '';
+
+  // Add blinking cursor span
+  const cursor = document.createElement('span');
+  cursor.className = 'tw-cursor';
+  el.appendChild(cursor);
+
+  // Split text preserving emoji (basic grapheme split via Intl if available)
+  let chars;
+  try {
+    chars = [...new Intl.Segmenter().segment(text)].map(s => s.segment);
+  } catch(e) {
+    chars = [...text];
+  }
+
+  let i = 0;
+  function tick() {
+    if (i >= chars.length) {
+      // Remove cursor when done
+      cursor.remove();
+      if (onDone) onDone();
+      return;
+    }
+    const ch = chars[i++];
+    // Insert before cursor
+    if (ch === '\n') {
+      const br = document.createElement('br');
+      el.insertBefore(br, cursor);
+    } else {
+      // Use a text node for safety
+      const tn = document.createTextNode(ch);
+      el.insertBefore(tn, cursor);
+    }
+    const delay = /[.,!?…—]/.test(ch) ? speed * 5 : speed;
+    const tid = setTimeout(tick, delay);
+    twTimers.push(tid);
+  }
+  tick();
+}
+
+
+function typeChain(tasks, gap, onAllDone) {
+  function run(idx) {
+    if (idx >= tasks.length) { if (onAllDone) onAllDone(); return; }
+    const {el, text, speed} = tasks[idx];
+    type(el, text, speed, () => {
+      const tid = setTimeout(() => run(idx + 1), gap);
+      twTimers.push(tid);
+    });
+  }
+  run(0);
+}
+
+function clearTW() {
+  twTimers.forEach(clearTimeout);
+  twTimers = [];
+}
+
+function revealBtn(id) {
+  const b = document.getElementById(id);
+  if (b) b.classList.add('visible');
+}
+
+/* ─────────────────────────────────────────
+   SCREEN CONTENT CONFIG
+───────────────────────────────────────── */
+const SCREEN_ANIM = {
+  s1: () => {
+    typeChain([
+      { el: document.getElementById('t1-title'), text: 'Привет,\nДана!', speed: 55 },
+      { el: document.getElementById('t1-sub'),   text: 'Я хочу сказать тебе кое-что важное.\nТебе нужно прочитать максимально внимательно :D', speed: 28 },
+    ], 180, () => revealBtn('t1-btn'));
+  },
+  s2: () => {
+    typeChain([
+      { el: document.getElementById('t2-title'), text: 'Готова к предложению?', speed: 60 },
+      { el: document.getElementById('t2-sub'),   text: 'Пока не руки и сердца\nВнатуре очень рано', speed: 30 },
+    ], 160, () => revealBtn('t2-btn'));
+  },
+  s3: () => {
+    typeChain([
+      { el: document.getElementById('t3-title'), text: 'Ты готова?', speed: 70 },
+      { el: document.getElementById('t3-sub'),   text: 'Ты уверена, что готова?', speed: 32 },
+      { el: document.getElementById('t3-sub2'),  text: 'Потому что, я хочу кое что тебе сказать\nэто очень важно для меня', speed: 28 },
+    ], 140, () => revealBtn('t3-btn'));
+  },
+  s3_5: () => {
+    typeChain([
+      { el: document.getElementById('t35-title'), text: 'Ты точно готова?', speed: 65 },
+      { el: document.getElementById('t35-sub'),   text: 'Точно точно? Без сомнений?', speed: 32 },
+      { el: document.getElementById('t35-sub2'),  text: 'Окей, я тебе доверяю...\nТогда смотри ', speed: 30 },
+    ], 140, () => revealBtn('t35-btn'));
+  },
+  s4: () => {
+    typeChain([
+      { el: document.getElementById('t4-title'), text: 'Пойдёшь со мной\nна свидание?', speed: 58 },
+      { el: document.getElementById('t4-sub'),   text: 'Я хочу провести этот вечер именно с тобой.\nТолько ты и я, и я хочу\nсоздать что-то незабываемое для нас двоих', speed: 24 },
+    ], 160, null);
+  },
+  s5: () => {
+    type(document.getElementById('t5-title'), 'Выбери дату\nи время', 55, null);
+  },
+  s6: () => {
+    typeChain([
+      { el: document.getElementById('t6-title'), text: 'Любимое блюдо?', speed: 62 },
+      { el: document.getElementById('t6-sub'),   text: 'Я позабочусь о том, чтобы оно было\nна нашем столе 🌹', speed: 28 },
+    ], 150, () => revealBtn('t6-btn'));
+  },
+  s7: () => {
+    typeChain([
+      { el: document.getElementById('t7-title'), text: 'Это будет\nнезабываемо!', speed: 60 },
+      { el: document.getElementById('t7-sub'),   text: 'Жду тебя с нетерпением.\nБуду считать каждую минуту 🌙\n\nС любовью Даня :D ', speed: 26 },
+    ], 250, null);
+  },
+};
+
+/* ─────────────────────────────────────────
+   NAVIGATION
+───────────────────────────────────────── */
+function go(n) {
+  clearTW();
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+
+  // Hide all btn-reveal buttons (reset)
+  document.querySelectorAll('.btn-reveal').forEach(b => b.classList.remove('visible'));
+
+  const key = 's' + String(n).replace('.','_');
+  const screen = document.getElementById(key);
+  if (!screen) return;
+  screen.classList.add('active');
+
+  if (n === 5) initCalendar();
+  if (n === 4) resetNoBtn();
+
+  // Trigger typewriter after fade-in
+  const tid = setTimeout(() => {
+    if (SCREEN_ANIM[key]) SCREEN_ANIM[key]();
+  }, 150);
+  twTimers.push(tid);
+}
+
+function resetNoBtn() {
+  noRunCount = 0;
+  const nb = document.getElementById('noBtn');
+  if (!nb) return;
+  nb.style.transform = 'translate(0,0) rotate(0deg)';
+  nb.style.fontSize  = '';
+  nb.style.opacity   = '1';
+}
+
+/* ─────────────────────────────────────────
+   STARS & PETALS
+───────────────────────────────────────── */
+function initStars() {
+  const c = document.getElementById('stars');
+  for (let i = 0; i < 80; i++) {
+    const s = document.createElement('div');
+    s.className = 'star';
+    s.style.cssText = `left:${Math.random()*100}%;top:${Math.random()*100}%;`
+      + `animation-duration:${2+Math.random()*4}s;`
+      + `animation-delay:${Math.random()*5}s;`
+      + `opacity:${0.2+Math.random()*0.6}`;
+    c.appendChild(s);
+  }
+}
+function initPetals() {
+  const c = document.getElementById('petals');
+  for (let i = 0; i < 14; i++) {
+    const p = document.createElement('div');
+    p.className = 'petal';
+    p.style.cssText = `left:${Math.random()*100}%;`
+      + `animation-duration:${7+Math.random()*8}s;`
+      + `animation-delay:${Math.random()*12}s;`
+      + `transform:rotate(${Math.random()*360}deg)`;
+    c.appendChild(p);
+  }
+}
+
+/* ─────────────────────────────────────────
+   YES / RUNAWAY NO
+───────────────────────────────────────── */
+function sayYes() {
+  spawnConfetti();
+  setTimeout(() => go(5), 650);
+}
+
+function runAway(e) {
+  if (e) { e.preventDefault(); e.stopPropagation(); }
+  const nb = document.getElementById('noBtn');
+  if (!nb || noRunCount >= 14) return;
+  noRunCount++;
+  const maxX = Math.max(40, 130 - noRunCount * 6);
+  const maxY = Math.max(25,  80 - noRunCount * 3);
+  const rx = (Math.random() - 0.5) * 2 * maxX;
+  const ry = (Math.random() - 0.5) * 2 * maxY;
+  const rr = (Math.random() - 0.5) * 28;
+  nb.style.transform = `translate(${rx}px, ${ry}px) rotate(${rr}deg)`;
+  nb.style.fontSize  = Math.max(0.6, 1.05 - noRunCount * 0.032) + 'rem';
+  nb.style.opacity   = Math.max(0.18, 0.75 - noRunCount * 0.04);
+}
+
+/* ─────────────────────────────────────────
+   CONFETTI
+───────────────────────────────────────── */
+function spawnConfetti() {
+  const colors = ['#ff69b4','#ff1493','#ffd700','#fff','#c71585','#ffb6c1','#ffa0c8'];
+  for (let i = 0; i < 55; i++) {
+    const p = document.createElement('div');
+    p.className = 'confetti-piece';
+    p.style.cssText = `left:${Math.random()*100}vw;top:-12px;`
+      + `background:${colors[Math.floor(Math.random()*colors.length)]};`
+      + `animation-delay:${Math.random()*0.9}s;`
+      + `animation-duration:${2.2+Math.random()*2}s;`
+      + `transform:rotate(${Math.random()*360}deg)`;
+    document.body.appendChild(p);
+    setTimeout(() => p.remove(), 5000);
+  }
+}
+
+/* ─────────────────────────────────────────
+   CALENDAR
+───────────────────────────────────────── */
+function initCalendar() {
+  const now = new Date();
+  calYear  = now.getFullYear();
+  calMonth = now.getMonth();
+  const hs = document.getElementById('hourSel');
+  if (!hs.options.length) {
+    for (let h = 10; h <= 22; h++) {
+      const o = document.createElement('option');
+      o.textContent = String(h).padStart(2,'0');
+      hs.appendChild(o);
+    }
+    hs.value = '19';
+  }
+  renderCal();
+}
+function renderCal() {
+  document.getElementById('calTitle').textContent = MONTHS_RU[calMonth] + ' ' + calYear;
+  const grid = document.getElementById('calGrid');
+  const headers = Array.from(grid.querySelectorAll('.cal-header'));
+  grid.innerHTML = '';
+  headers.forEach(h => grid.appendChild(h));
+  const today = new Date(); today.setHours(0,0,0,0);
+  let startDay = new Date(calYear, calMonth, 1).getDay();
+  if (startDay === 0) startDay = 7;
+  startDay -= 1;
+  for (let e = 0; e < startDay; e++) {
+    const d = document.createElement('div'); d.className = 'cal-day empty'; grid.appendChild(d);
+  }
+  const dim = new Date(calYear, calMonth + 1, 0).getDate();
+  for (let day = 1; day <= dim; day++) {
+    const d = document.createElement('div'); d.className = 'cal-day'; d.textContent = day;
+    const td = new Date(calYear, calMonth, day);
+    if (td < today) {
+      d.classList.add('past');
+    } else {
+      d.onclick = () => {
+        grid.querySelectorAll('.cal-day.selected').forEach(x => x.classList.remove('selected'));
+        d.classList.add('selected');
+        selDay = day; selMonth = calMonth; selYear = calYear;
+      };
+    }
+    if (selDay === day && selMonth === calMonth && selYear === calYear) d.classList.add('selected');
+    grid.appendChild(d);
+  }
+}
+function changeMonth(dir) {
+  calMonth += dir;
+  if (calMonth > 11) { calMonth = 0; calYear++; }
+  if (calMonth <  0) { calMonth = 11; calYear--; }
+  renderCal();
+}
+function goToFood() {
+  if (!selDay) { alert('Пожалуйста, выбери дату 💕'); return; }
+  go(6);
+}
+async function goToFinal() {
+  const food = document.getElementById('foodInput').value.trim();
+  if (!food) { alert('Расскажи о своём любимом блюде 🍽️'); return; }
+
+  const h = document.getElementById('hourSel').value;
+  const m = document.getElementById('minSel').value;
+  const dateStr = selDay + ' ' + MONTHS_GEN[selMonth] + ' ' + selYear + ' г.';
+  const timeStr = h + ':' + m;
+
+  document.getElementById('finalDate').textContent = dateStr;
+  document.getElementById('finalTime').textContent = timeStr;
+  document.getElementById('finalFood').textContent = food;
+
+  // ── Отправка в Telegram ──
+  // ШАГ 1: вставь сюда токен бота от @BotFather
+  const TG_TOKEN   = '8833209299:AAG_3vI0nbJLIoyywBpPVkHDcyASEmk38U4';
+  // ШАГ 2: вставь сюда свой chat_id
+  const TG_CHAT_ID = '"chat":{"id":626208843}';
+
+  const msg =
+    `\u{1F495} *Она согласилась на свидание!*\n\n` +
+    `\u{1F4C5} *Дата:* ${dateStr}\n` +
+    `\u{1F550} *Время:* ${timeStr}\n` +
+    `\u{1F37D} *Любимое блюдо:* ${food}`;
+
+  try {
+    await fetch(`https://api.telegram.org/bot${TG_TOKEN}/sendMessage`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        chat_id:    TG_CHAT_ID,
+        text:       msg,
+        parse_mode: 'Markdown'
+      })
+    });
+  } catch(e) {
+    console.warn('Telegram error:', e);
+  }
+
+  spawnConfetti();
+  go(7);
+  setTimeout(spawnConfetti, 1100);
+}
+
+/* ─────────────────────────────────────────
+   INIT
+───────────────────────────────────────── */
+initStars();
+initPetals();
+// Start typing on first screen
+setTimeout(() => { if (SCREEN_ANIM['s1']) SCREEN_ANIM['s1'](); }, 400);
+</script>
+</body>
+</html>
